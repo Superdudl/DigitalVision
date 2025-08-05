@@ -1,13 +1,9 @@
 #ifndef CAMERACONTROLLER_H
 #define CAMERACONTROLLER_H
 
-#include <stdio.h>
 #include <windows.h>
 #include "CameraApi.h"
-
 #include <QObject>
-
-#include <memory>
 #include <vector>
 
 class Camera
