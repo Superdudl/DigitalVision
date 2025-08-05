@@ -25,7 +25,7 @@ CameraController::CameraController(QObject *parent)
         status = CameraInitEx(i, -1, -1, &hCamera.at(i));
         CameraGetEnumInfo(hCamera.at(i), &CameraList.at(i));
 
-        qDebug() << "Камера №" << i+1 << "-" << CameraList.at(i).acFriendlyName << "("<< CameraList.at(i).acSn <<")";
+        qDebug() << "Камера №" << i+1 << "-" << CameraList.at(i).acFriendlyName << "(" << CameraList.at(i).acSn << ")";
     }
 
     qDebug() << "Найдено камер:" << CameraList.size();
