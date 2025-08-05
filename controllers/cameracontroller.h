@@ -6,14 +6,6 @@
 #include <QObject>
 #include <vector>
 
-class Camera
-{
-private:
-
-};
-
-#endif // CAMERACONTROLLER_H
-
 class CameraController : public QObject
 {
     Q_OBJECT
@@ -27,3 +19,5 @@ private:
 
 signals:
 };
+
+#endif // CAMERACONTROLLER_H

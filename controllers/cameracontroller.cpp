@@ -5,6 +5,8 @@
 CameraController::CameraController(QObject *parent)
     : QObject{parent}
 {
+    CameraSdkStatus status;
+
     if (this->CameraNums < 1)
     {
         QMessageBox::warning(
@@ -12,6 +14,18 @@ CameraController::CameraController(QObject *parent)
             "Ошибка",
             "Камеры не найдены. Подключите камеры и перезапустите программу."
             );
+    }
+
+    CameraList.resize(CameraNums);
+    std::vector<int> hCamera (CameraNums);
+    for (int i = 0; i < CameraList.size(); ++i)
+    {
+        hCamera.at(i) = i;
+        CameraGetEnumInfo(hCamera.at(i), &CameraList.at(i));
+        status = CameraInitEx(i, -1, -1, &hCamera.at(i));
+        CameraGetEnumInfo(hCamera.at(i), &CameraList.at(i));
+
+        qDebug() << "Камера №" << i+1 << "-" << CameraList.at(i).acFriendlyName << "("<< CameraList.at(i).acSn <<")";
     }
 
     qDebug() << "Найдено камер:" << CameraList.size();
