@@ -10,8 +10,9 @@ int main(int argc, char* argv[])
 {
     auto app = std::make_unique<QApplication>(argc, argv);
     auto window = new MainWindow();
+    auto ui = window->ui;
 
-    auto main_controller = std::make_unique<MainController>(window->ui, window);
+    auto main_controller = std::make_unique<MainController>(ui, window);
 
     QList<QScreen*> screens = app->screens();
 
@@ -26,6 +27,7 @@ int main(int argc, char* argv[])
     window->move((primeScreenGeometry.width() - window->width()) / 2,
         (primeScreenGeometry.height() - window->height()) / 2);
 
+    qDebug() << "Кнопка 1:" << window->ui->connect_button;
     window->show();
     app->exec();
 }

@@ -172,27 +172,10 @@
           <property name="verticalSpacing">
            <number>6</number>
           </property>
-          <item row="2" column="1">
-           <widget class="QLineEdit" name="Exposure_edit_2"/>
-          </item>
-          <item row="0" column="2">
-           <widget class="QCheckBox" name="Exposure_auto">
-            <property name="text">
-             <string>Авто</string>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="2">
+          <item row="2" column="3">
            <widget class="QCheckBox" name="Gain_Auto">
             <property name="text">
              <string>Авто</string>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="0">
-           <widget class="QLabel" name="Gain_label">
-            <property name="text">
-             <string>Усиление</string>
             </property>
            </widget>
           </item>
@@ -203,10 +186,27 @@
             </property>
            </widget>
           </item>
-          <item row="0" column="1">
+          <item row="2" column="0">
+           <widget class="QLabel" name="Gain_label">
+            <property name="text">
+             <string>Усиление</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="2">
            <widget class="QLineEdit" name="Exposure_edit"/>
           </item>
-          <item row="1" column="1">
+          <item row="0" column="3">
+           <widget class="QCheckBox" name="Exposure_auto">
+            <property name="text">
+             <string>Авто</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="2">
+           <widget class="QLineEdit" name="Exposure_edit_2"/>
+          </item>
+          <item row="1" column="2">
            <spacer name="verticalSpacer_3">
             <property name="orientation">
              <enum>Qt::Orientation::Vertical</enum>
@@ -218,6 +218,22 @@
              <size>
               <width>20</width>
               <height>10</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item row="0" column="1">
+           <spacer name="horizontalSpacer">
+            <property name="orientation">
+             <enum>Qt::Orientation::Horizontal</enum>
+            </property>
+            <property name="sizeType">
+             <enum>QSizePolicy::Policy::Fixed</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>15</width>
+              <height>20</height>
              </size>
             </property>
            </spacer>

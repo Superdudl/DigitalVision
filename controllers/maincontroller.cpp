@@ -1,13 +1,13 @@
 #include "maincontroller.h"
-#include "cameracontroller.h"
 #include <QList>
 #include <QScreen>
 #include <QApplication>
+#include <QPushButton>
 
 #include <memory>
 
-MainController::MainController(Ui::MainWindow* ui, QObject *parent)
-    : QObject{parent}, ui{ui}
+MainController::MainController(Ui::MainWindow* m_ui, QObject *parent)
+    : QObject{parent}, ui{m_ui}
 {
     find_screens();
     connect_controllers();
@@ -22,11 +22,10 @@ void MainController::find_screens()
     {
         auto screen = screens.at(i);
         ui->DisplayCombo->addItem(screen->name());
-
     }
 }
 
 void MainController::connect_controllers()
 {
-    auto camera_controller = std::make_shared<CameraController>(ui, this);
+    camera_controller = std::make_unique<CameraController>(ui, this);
 }
