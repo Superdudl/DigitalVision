@@ -117,7 +117,7 @@
           <item>
            <layout class="QGridLayout" name="gridLayout">
             <item row="0" column="0" colspan="2">
-             <widget class="QComboBox" name="CameraList"/>
+             <widget class="QComboBox" name="DeviceList"/>
             </item>
             <item row="2" column="0">
              <widget class="QPushButton" name="connect_button">

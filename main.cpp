@@ -8,10 +8,10 @@
 
 int main(int argc, char* argv[])
 {
-    auto app = std::make_shared<QApplication>(argc, argv);
-    auto window = std::make_shared<MainWindow>();
+    auto app = std::make_unique<QApplication>(argc, argv);
+    auto window = new MainWindow();
 
-    auto main_controller = std::make_shared<MainController>(window, window.get());
+    auto main_controller = std::make_unique<MainController>(window->ui, window);
 
     QList<QScreen*> screens = app->screens();
 

@@ -5,16 +5,13 @@
 #include "../view/mainwindow.h"
 #include "ui_mainwindow.h"
 
-
-#include <memory>
 class MainController : public QObject
 {
     Q_OBJECT
 public:
-    explicit MainController(std::shared_ptr<MainWindow> window, QObject *parent = nullptr);
+    explicit MainController(Ui::MainWindow* ui, QObject *parent = nullptr);
 
-    std::shared_ptr<MainWindow> window = nullptr;
-    std::shared_ptr<Ui::MainWindow> ui = nullptr;
+    Ui::MainWindow* ui;
 
     void find_screens();
     void connect_controllers();

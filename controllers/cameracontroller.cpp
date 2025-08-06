@@ -1,9 +1,10 @@
 #include "cameracontroller.h"
 #include <QMessageBox>
 #include <QDebug>
+#include <ui_mainwindow.h>
 
-CameraController::CameraController(QObject *parent)
-    : QObject{parent}
+CameraController::CameraController(Ui::MainWindow* ui, QObject *parent)
+    : QObject{parent}, ui{ui}
 {
     CameraSdkStatus status;
 
@@ -26,6 +27,9 @@ CameraController::CameraController(QObject *parent)
         CameraGetEnumInfo(hCamera.at(i), &CameraList.at(i));
 
         qDebug() << "Камера №" << i+1 << "-" << CameraList.at(i).acFriendlyName << "(" << CameraList.at(i).acSn << ")";
+
+        QString str = QString("%1 (SN:%2)").arg(CameraList.at(i).acFriendlyName).arg( CameraList.at(i).acSn);
+        ui->DeviceList->addItem(str);
     }
 
     qDebug() << "Найдено камер:" << CameraList.size();

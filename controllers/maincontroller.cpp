@@ -6,8 +6,8 @@
 
 #include <memory>
 
-MainController::MainController(std::shared_ptr<MainWindow> window, QObject *parent)
-    : QObject{parent}, window{window}, ui{window->ui}
+MainController::MainController(Ui::MainWindow* ui, QObject *parent)
+    : QObject{parent}, ui{ui}
 {
     find_screens();
     connect_controllers();
@@ -22,10 +22,11 @@ void MainController::find_screens()
     {
         auto screen = screens.at(i);
         ui->DisplayCombo->addItem(screen->name());
+
     }
 }
 
 void MainController::connect_controllers()
 {
-    auto camera_controller = std::make_shared<CameraController>(this);
+    auto camera_controller = std::make_shared<CameraController>(ui, this);
 }
