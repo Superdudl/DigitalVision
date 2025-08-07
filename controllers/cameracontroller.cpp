@@ -17,18 +17,19 @@ CameraThread::CameraThread(int *hCamera, tSdkCameraCapbility* CameraInfo, QObjec
 
 CameraThread::~CameraThread()
 {
-
+    qDebug() << "Вызван деструктор потока";
 }
 
 void CameraThread::run()
 {
+    qDebug() << "Поток запущен";
     CameraPlay(*hCamera);
     UINT FrameBufferSize = CameraInfo->sResolutionRange.iWidthMax * CameraInfo->sResolutionRange.iHeightMax *  3;
     BYTE* pFrameBuffer = (BYTE *)CameraAlignMalloc(FrameBufferSize, 16);
 
     tSdkFrameHead FrameHead;
 
-    while (!this->isInterruptionRequested())
+    while (!isInterruptionRequested())
     {
         auto status = CameraGetImageBufferEx2(*hCamera, pFrameBuffer, 1, &FrameHead.iWidth, &FrameHead.iHeight, 2000);
 
@@ -36,20 +37,14 @@ void CameraThread::run()
         {
             FrameHead.uiMediaType = CAMERA_MEDIA_TYPE_BGR8;
             FrameHead.uBytes = FrameHead.iWidth * FrameHead.iHeight * 3;
-
-            // qDebug() << pFrameBuffer[3024];
-
             QImage image(pFrameBuffer, FrameHead.iWidth, FrameHead.iHeight, FrameHead.iWidth * 3, QImage::Format::Format_RGB888);
-            // if (image.save("saved.png", "PNG"))
-            // {
-            //     qDebug() << "Сохранено";
-            // }
             emit frame_grabbed(image, hCamera);
+
+            if (isInterruptionRequested())
+                qDebug() << "Вызвано прерывание";
         }
-
     }
-
-    return;
+    qDebug() << "Выход из цикла";
 }
 
 CameraController::CameraController(Ui::MainWindow* m_ui, QObject *parent) : QObject(parent), ui{m_ui}
@@ -127,11 +122,10 @@ CameraController::~CameraController()
         {
             threads.at(i)->requestInterruption();
             threads.at(i)->wait();
+            qDebug() << threads.at(i)->isRunning();
             CameraUnInit(hCamera.at(i));
         }
     }
-
-
 }
 
 void CameraController::connect_camera()
@@ -140,7 +134,7 @@ void CameraController::connect_camera()
 
     // Максимум 2 потока
 
-    if (threads.size() <= THREADS_NUM)
+    if (threads.size() <= THREADS_NUM && hCamera.size() > 0)
     {
         auto pCamera = &hCamera.at(index);
         threads.at(index) = std::make_unique<CameraThread>(pCamera, &CameraInfo.at(index), this);
@@ -149,7 +143,7 @@ void CameraController::connect_camera()
         threads.at(index)->start();
 
         //----------------------------------------  СЛОТЫ  ---------------------------------------------------------------------------------------
-        connect(threads.at(index).get(), &CameraThread::frame_grabbed, this, &CameraController::update_frame, Qt::BlockingQueuedConnection);
+        connect(threads.at(index).get(), &CameraThread::frame_grabbed, this, &CameraController::update_frame, Qt::QueuedConnection);
         //----------------------------------------------------------------------------------------------------------------------------------------
     }
 }
@@ -161,18 +155,17 @@ void CameraController::update_frame(QImage image, const int *hCamera)
     switch (*hCamera)
     {
     case 1:
-        left_image = image.copy();
+        left_image = image;
         pixmap = QPixmap::fromImage(left_image, Qt::ColorOnly);
         break;
     case 2:
-        right_image = image.copy();
+        right_image = image;
         pixmap.fromImage(left_image);
         break;
     }
     if (!pixmap.isNull())
     {
         pixmap = pixmap.scaled(ui->left_camera->size(), Qt::KeepAspectRatio);
-        qDebug() << ui->left_camera->size() << pixmap.size() << left_image.size();
         ui->left_camera->setPixmap(pixmap);
     }
 }
