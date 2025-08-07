@@ -1,10 +1,12 @@
 #ifndef CAMERACONTROLLER_H
 #define CAMERACONTROLLER_H
+#define THREADS_NUM 2
 
 #include <windows.h>
 #include "CameraApi.h"
 #include <QObject>
 #include <QThread>
+#include <QPixmap>
 #include <vector>
 #include "ui_mainwindow.h"
 #include <memory>
@@ -13,15 +15,16 @@ class CameraThread : public QThread
 {
     Q_OBJECT
 public:
-    explicit CameraThread(int *hCamera, QObject* parent = nullptr);
+    explicit CameraThread(int *hCamera, tSdkCameraCapbility *CameraInfo, QObject* parent = nullptr);
     ~CameraThread();
 
 protected:
     void run() override;
     int* hCamera;
+    tSdkCameraCapbility* CameraInfo;
 
 signals:
-    void frame_grabbed(const QImage &image);
+    void frame_grabbed(QImage image, const int *hCamera);
 
 };
 
@@ -49,9 +52,8 @@ private:
     QImage left_image;
     QImage right_image;
 
-
 private slots:
-    void update_frame(const QImage &image);
+    void update_frame(QImage image, const int *hCamera);
     void connect_camera();
 };
 

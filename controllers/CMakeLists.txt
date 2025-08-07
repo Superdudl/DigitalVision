@@ -15,19 +15,16 @@ set_target_properties(MVCAMSDK PROPERTIES
     IMPORTED_LOCATION "C:\\Projects\\_Libs\\ChinaVision\\SDK\\X64\\MVCAMSDK_X64.dll"
     INTERFACE_INCLUDE_DIRECTORIES "C:\\Projects\\_Libs\\ChinaVision\\Demo\\VC++\\Include")
 
-find_package(Qt6 6.5 REQUIRED COMPONENTS Core Widgets)
-find_package(Qt6 REQUIRED COMPONENTS Core)
-find_package(Qt6 REQUIRED COMPONENTS Core)
+find_package(Qt6 6.5 REQUIRED COMPONENTS Core Widgets Gui)
 
 target_link_libraries(AppController
     PUBLIC
         Qt::Core
         Qt::Widgets
+        Qt6::Gui
         AppView
         MVCAMSDK
 )
-target_link_libraries(AppController PRIVATE Qt6::Core)
-target_link_libraries(AppController PRIVATE Qt6::Core)
 
 set_target_properties(AppController PROPERTIES
     AUTOMOC ON

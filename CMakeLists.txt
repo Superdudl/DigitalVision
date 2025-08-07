@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.19)
-# set(CMAKE_TOOLCHAIN_FILE "C:/Projects/_Libs/vcpkg/scripts/buildsystems/vcpkg.cmake")
+set(CMAKE_TOOLCHAIN_FILE "C:/Projects/_Libs/vcpkg/scripts/buildsystems/vcpkg.cmake")
 project(DigitalVision LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -29,7 +29,11 @@ qt_add_executable(DigitalVision
     main.cpp
 
 )
-
+add_library(MVCAMSDK SHARED IMPORTED)
+set_target_properties(MVCAMSDK PROPERTIES
+    IMPORTED_IMPLIB "C:\\Projects\\_Libs\\ChinaVision\\SDK\\X64\\MVCAMSDK_X64.lib"
+    IMPORTED_LOCATION "C:\\Projects\\_Libs\\ChinaVision\\SDK\\X64\\MVCAMSDK_X64.dll"
+    INTERFACE_INCLUDE_DIRECTORIES "C:\\Projects\\_Libs\\ChinaVision\\Demo\\VC++\\Include")
 
 include_directories($OpenCV_INCLUDE_DIRS})
 
@@ -40,6 +44,7 @@ target_link_libraries(DigitalVision
         ${OpenCV_LIBS}
         AppView
         AppController
+        MVCAMSDK
 )
 
 include(GNUInstallDirs)
