@@ -5,22 +5,26 @@
 #include "../view/mainwindow.h"
 #include "ui_mainwindow.h"
 #include "cameracontroller.h"
+#include "sharecontroller.h"
 #include <memory>
 
 class MainController : public QObject
 {
     Q_OBJECT
 public:
-    explicit MainController(Ui::MainWindow* m_ui, QObject *parent = nullptr);
+    explicit MainController(MainWindow* window, QObject *parent = nullptr);
+    ~MainController();
 
-    Ui::MainWindow* ui;
+    MainWindow* window;
 
     void find_screens();
     void connect_controllers();
 
 private:
-    std::unique_ptr<CameraController> camera_controller;
-
+    std::shared_ptr<CameraController> camera_controller;
+    ShareController* share_controller;
+private slots:
+    void close();
 };
 
 #endif // MAINCONTROLLER_H

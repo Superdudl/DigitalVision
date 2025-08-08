@@ -2,6 +2,8 @@ add_library(AppView
     mainwindow.cpp
     mainwindow.h
     mainwindow.ui
+
+
 )
 
 target_include_directories(AppView PUBLIC

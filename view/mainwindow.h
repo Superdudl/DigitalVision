@@ -2,6 +2,7 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include <QCloseEvent>
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -19,6 +20,9 @@ public:
     Ui::MainWindow *ui;
 
 private:
+    void closeEvent(QCloseEvent* event) override;
 
+signals:
+    void windowClosing();
 };
 #endif // MAINWINDOW_H

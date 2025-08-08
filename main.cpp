@@ -13,7 +13,7 @@ int main(int argc, char* argv[])
     window->setWindowTitle("DigitalVision");
     auto ui = window->ui;
 
-    auto main_controller = std::make_unique<MainController>(ui, window);
+    auto main_controller = std::make_unique<MainController>(window, window);
 
     QList<QScreen*> screens = app->screens();
 

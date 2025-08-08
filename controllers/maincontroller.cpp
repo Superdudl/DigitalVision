@@ -6,11 +6,24 @@
 
 #include <memory>
 
-MainController::MainController(Ui::MainWindow* m_ui, QObject *parent)
-    : QObject{parent}, ui{m_ui}
+MainController::MainController(MainWindow* window, QObject *parent)
+    : QObject{parent}, window{window}
 {
+    //-------------------------------- СЛОТЫ -------------------------------------
+    connect(window, &MainWindow::windowClosing, this, &MainController::close);
+    //----------------------------------------------------------------------------
     find_screens();
     connect_controllers();
+}
+
+MainController::~MainController()
+{
+
+}
+
+void MainController::close()
+{
+    share_controller->close();
 }
 
 void MainController::find_screens()
@@ -21,11 +34,12 @@ void MainController::find_screens()
     for (int i = 0; i < screens.count(); ++i)
     {
         auto screen = screens.at(i);
-        ui->DisplayCombo->addItem(screen->name());
+        window->ui->DisplayCombo->addItem(screen->name());
     }
 }
 
 void MainController::connect_controllers()
 {
-    camera_controller = std::make_unique<CameraController>(ui, this);
+    camera_controller = std::make_shared<CameraController>(window->ui, this);
+    share_controller = new ShareController(camera_controller, this);
 }
