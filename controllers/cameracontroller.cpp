@@ -140,26 +140,26 @@ CameraController::~CameraController()
 
 QImage CameraController::getLeftImage()
 {
-    QWriteLocker locker(&left_mutex);
-    return left_image;
+    QReadLocker locker(&left_mutex);
+    return left_image.copy();
 }
 
 QImage CameraController::getRightImage()
 {
-    QWriteLocker locker(&right_mutex);;
-    return right_image;
+    QReadLocker locker(&left_mutex);
+    return right_image.copy();
 }
 
 void CameraController::setLeftImage(QImage image)
 {
-    QReadLocker locker(&left_mutex);
-    left_image = image.copy();
+    QWriteLocker locker(&left_mutex);
+    left_image = image;
 }
 
 void CameraController::setRightImage(QImage image)
 {
-    QReadLocker locker(&right_mutex);
-    right_image = image.copy();
+    QWriteLocker locker(&left_mutex);
+    right_image = image;
 }
 
 void CameraController::connect_camera()
