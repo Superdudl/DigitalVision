@@ -5,6 +5,8 @@
 #include <QComboBox>
 #include <QPushButton>
 #include <QPixmap>
+#include <QReadLocker>
+#include <QWriteLocker>
 
 CameraThread::CameraThread(int *hCamera, Ui::MainWindow* ui, CameraController *parent)
 {
@@ -40,7 +42,7 @@ void CameraThread::run()
             FrameHead.uBytes = FrameHead.iWidth * FrameHead.iHeight * 3;
             QImage image(pFrameBuffer, FrameHead.iWidth, FrameHead.iHeight, FrameHead.iWidth * 3, QImage::Format::Format_RGB888);
             auto scaled_image = image.copy().scaled(ui->left_camera->size(), Qt::KeepAspectRatio);
-            pixmap = QPixmap::fromImage(scaled_image).scaled(ui->left_camera->size(), Qt::KeepAspectRatio);;
+            pixmap = QPixmap::fromImage(scaled_image);
             switch (*hCamera)
             {
             case 1:
@@ -138,26 +140,26 @@ CameraController::~CameraController()
 
 QImage CameraController::getLeftImage()
 {
-    std::lock_guard lock(mtx);
+    QWriteLocker locker(&left_mutex);
     return left_image;
 }
 
 QImage CameraController::getRightImage()
 {
-    std::lock_guard lock(mtx);
+    QWriteLocker locker(&right_mutex);;
     return right_image;
 }
 
 void CameraController::setLeftImage(QImage image)
 {
-    std::lock_guard lock(mtx);
-    left_image = image;
+    QReadLocker locker(&left_mutex);
+    left_image = image.copy();
 }
 
 void CameraController::setRightImage(QImage image)
 {
-    std::lock_guard lock(mtx);
-    right_image = image;
+    QReadLocker locker(&right_mutex);
+    right_image = image.copy();
 }
 
 void CameraController::connect_camera()

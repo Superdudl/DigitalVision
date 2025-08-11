@@ -10,7 +10,7 @@
 #include <vector>
 #include "ui_mainwindow.h"
 #include <memory>
-#include <mutex>
+#include <QReadWriteLock>
 
 class CameraController;
 
@@ -81,7 +81,8 @@ public:
     QImage getLeftImage();
 
 private:
-    mutable std::mutex mtx;
+    QReadWriteLock left_mutex;
+    QReadWriteLock right_mutex;
 
 private slots:
     void connect_camera();

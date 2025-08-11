@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.19)
-set(CMAKE_TOOLCHAIN_FILE "C:/Projects/_Libs/vcpkg/scripts/buildsystems/vcpkg.cmake")
+set(CMAKE_TOOLCHAIN_FILE "D:/Projects/_Libs/vcpkg/scripts/buildsystems/vcpkg.cmake")
 project(DigitalVision LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -12,12 +12,12 @@ add_subdirectory(view/)
 
 set( OpenCV_DIR )
 if( NOT CMAKE_CL_64 )
-  set( OpenCV_DIR "C:/Projects/_Libs/vcpkg/installed/x86-windows/share/opencv" )
+  set( OpenCV_DIR "D:/Projects/_Libs/vcpkg/installed/x86-windows/share/opencv" )
 else()
-  set( OpenCV_DIR "C:/Projects/_Libs/vcpkg/installed/x64-windows/share/opencv" )
+  set( OpenCV_DIR "D:/Projects/_Libs/vcpkg/installed/x64-windows/share/opencv" )
 endif()
 
-set(quirc_DIR "C:/Projects/_Libs/vcpkg/installed/x64-windows/share/quirc")
+set(quirc_DIR "D:/Projects/_Libs/vcpkg/installed/x64-windows/share/quirc")
 
 # find_package(OpenCV REQUIRED)
 find_package(Qt6 6.5 REQUIRED COMPONENTS Core Widgets)
@@ -31,9 +31,9 @@ qt_add_executable(DigitalVision
 )
 add_library(MVCAMSDK SHARED IMPORTED)
 set_target_properties(MVCAMSDK PROPERTIES
-    IMPORTED_IMPLIB "C:\\Projects\\_Libs\\ChinaVision\\SDK\\X64\\MVCAMSDK_X64.lib"
-    IMPORTED_LOCATION "C:\\Projects\\_Libs\\ChinaVision\\SDK\\X64\\MVCAMSDK_X64.dll"
-    INTERFACE_INCLUDE_DIRECTORIES "C:\\Projects\\_Libs\\ChinaVision\\Demo\\VC++\\Include")
+    IMPORTED_IMPLIB "D:\\Projects\\_Libs\\ChinaVision\\SDK\\X64\\MVCAMSDK_X64.lib"
+    IMPORTED_LOCATION "D:\\Projects\\_Libs\\ChinaVision\\SDK\\X64\\MVCAMSDK_X64.dll"
+    INTERFACE_INCLUDE_DIRECTORIES "D:\\Projects\\_Libs\\ChinaVision\\Demo\\VC++\\Include")
 
 include_directories($OpenCV_INCLUDE_DIRS})
 

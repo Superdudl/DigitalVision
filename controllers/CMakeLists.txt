@@ -12,9 +12,9 @@ target_include_directories(AppController PUBLIC
 
 add_library(MVCAMSDK SHARED IMPORTED)
 set_target_properties(MVCAMSDK PROPERTIES
-    IMPORTED_IMPLIB "C:\\Projects\\_Libs\\ChinaVision\\SDK\\X64\\MVCAMSDK_X64.lib"
-    IMPORTED_LOCATION "C:\\Projects\\_Libs\\ChinaVision\\SDK\\X64\\MVCAMSDK_X64.dll"
-    INTERFACE_INCLUDE_DIRECTORIES "C:\\Projects\\_Libs\\ChinaVision\\Demo\\VC++\\Include")
+    IMPORTED_IMPLIB "D:\\Projects\\_Libs\\ChinaVision\\SDK\\X64\\MVCAMSDK_X64.lib"
+    IMPORTED_LOCATION "D:\\Projects\\_Libs\\ChinaVision\\SDK\\X64\\MVCAMSDK_X64.dll"
+    INTERFACE_INCLUDE_DIRECTORIES "D:\\Projects\\_Libs\\ChinaVision\\Demo\\VC++\\Include")
 
 find_package(Qt6 6.5 REQUIRED COMPONENTS Core Widgets Gui)
 find_package(Qt6 REQUIRED COMPONENTS Core)
