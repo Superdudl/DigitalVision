@@ -2,7 +2,7 @@ add_library(AppController
     maincontroller.cpp
     maincontroller.h
     cameracontroller.h cameracontroller.cpp
-    sharecontroller.h sharecontroller.cpp
+    displaycontroller.h displaycontroller.cpp
 )
 
 target_include_directories(AppController PUBLIC
