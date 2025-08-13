@@ -11,7 +11,7 @@ target_include_directories(AppController PUBLIC
 )
 
 add_library(MVCAMSDK SHARED IMPORTED)
-set(MVCAMSDK_DIR "" CACHE PATH "Path to MVCAMSDK directory")
+set(MVCAMSDK_DIR "C:/Projects/_Libs/ChinaVision" CACHE PATH "Path to MVCAMSDK directory")
 
 if (NOT MVCAMSDK_DIR)
     message(FATAL_ERROR "Set MVCAMSDK_DIR to MVCAMSDK directory")

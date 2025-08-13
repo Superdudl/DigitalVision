@@ -5,8 +5,8 @@
 #include <QComboBox>
 #include <QPushButton>
 #include <QPixmap>
-#include <QReadLocker>
-#include <QWriteLocker>
+#include <QMutexLocker>
+#include <QString>
 
 CameraThread::CameraThread(int *hCamera, Ui::MainWindow* ui, CameraController *parent)
 {
@@ -40,23 +40,27 @@ void CameraThread::run()
         {
             FrameHead.uiMediaType = CAMERA_MEDIA_TYPE_BGR8;
             FrameHead.uBytes = FrameHead.iWidth * FrameHead.iHeight * 3;
-            QImage image(pFrameBuffer, FrameHead.iWidth, FrameHead.iHeight, FrameHead.iWidth * 3, QImage::Format::Format_RGB888);
-            auto scaled_image = image.copy().scaled(ui->left_camera->size(), Qt::KeepAspectRatio);
-            pixmap = QPixmap::fromImage(scaled_image);
+            QImage scaled_image;
             switch (*hCamera)
             {
             case 1:
-                controller->setLeftImage(image);
+                left_frame = QImage(pFrameBuffer, FrameHead.iWidth, FrameHead.iHeight, FrameHead.iWidth * 3, QImage::Format::Format_RGB888);
+                controller->setLeftImage(pFrameBuffer, &FrameHead);
+                scaled_image = left_frame.scaled(ui->left_camera->size(), Qt::KeepAspectRatio);
+                pixmap = QPixmap::fromImage(scaled_image);
                 if (!pixmap.isNull())
                 {
-                    ui->left_camera->setPixmap(pixmap);
+                    emit grabbed_left_image(pixmap);
                 }
                 break;
             case 2:
-                controller->setRightImage(image);
+                right_frame = QImage(pFrameBuffer, FrameHead.iWidth, FrameHead.iHeight, FrameHead.iWidth * 3, QImage::Format::Format_RGB888);
+                controller->setRightImage(pFrameBuffer, &FrameHead);
+                scaled_image = right_frame.scaled(ui->right_camera->size(), Qt::KeepAspectRatio);
+                pixmap = QPixmap::fromImage(scaled_image);
                 if (!pixmap.isNull())
                 {
-                    ui->right_camera->setPixmap(pixmap);
+                     emit grabbed_right_image(pixmap);
                 }
                 break;
             }
@@ -138,28 +142,28 @@ CameraController::~CameraController()
     }
 }
 
-QImage CameraController::getLeftImage()
+cv::Mat CameraController::getLeftImage()
 {
-    QReadLocker locker(&left_mutex);
-    return left_image.copy();
+    QMutexLocker locker(&left_mutex);
+    return left_image;
 }
 
-QImage CameraController::getRightImage()
+cv::Mat CameraController::getRightImage()
 {
-    QReadLocker locker(&left_mutex);
-    return right_image.copy();
+    QMutexLocker locker(&right_mutex);
+    return right_image;
 }
 
-void CameraController::setLeftImage(QImage image)
+void CameraController::setLeftImage(BYTE* pFrameBuffer, tSdkFrameHead *FrameHead)
 {
-    QWriteLocker locker(&left_mutex);
-    left_image = image;
+    QMutexLocker locker(&left_mutex);
+    left_image = cv::Mat(FrameHead->iHeight, FrameHead->iWidth, CV_8UC3, const_cast<uchar*>(pFrameBuffer),  FrameHead->iWidth * 3).clone();
 }
 
-void CameraController::setRightImage(QImage image)
+void CameraController::setRightImage(BYTE* pFrameBuffer, tSdkFrameHead *FrameHead)
 {
-    QWriteLocker locker(&left_mutex);
-    right_image = image;
+    QMutexLocker locker(&right_mutex);
+    right_image = cv::Mat(FrameHead->iHeight, FrameHead->iWidth, CV_8UC3, const_cast<uchar*>(pFrameBuffer),  FrameHead->iWidth * 3).clone();
 }
 
 void CameraController::connect_camera()
@@ -168,7 +172,7 @@ void CameraController::connect_camera()
     auto index = ui->DeviceList->currentIndex();
 
     auto path = QString("SN%2.config").arg(CameraList.at(index).acSn).toStdString();
-    // auto status = CameraReadParameterFromFile(hCamera.at(index), path.data());
+    auto status = CameraReadParameterFromFile(hCamera.at(index), path.data());
 
     // Максимум 2 потока
     if (!CameraIsActive.at(index))
@@ -178,10 +182,23 @@ void CameraController::connect_camera()
         CameraSetIspOutFormat(hCamera.at(index), CAMERA_MEDIA_TYPE_BGR8);
 
         auto pCamera = &hCamera.at(index);
-        threads.at(index) = std::make_unique<CameraThread>(pCamera, ui, this);
+        threads.at(index) = std::make_shared<CameraThread>(pCamera, ui, this);
         CameraIsActive.at(index) = TRUE;
+        //----------------------------------------  СЛОТЫ  --------------------------------------------------------------------------
+        connect(threads.at(index).get(), &CameraThread::grabbed_left_image, this, &CameraController::show_left_image, Qt::QueuedConnection);
+        connect(threads.at(index).get(), &CameraThread::grabbed_right_image, this, &CameraController::show_right_image, Qt::QueuedConnection);
+        //---------------------------------------------------------------------------------------------------------------------------
         threads.at(index)->start();
     }
 }
 
+void CameraController::show_left_image(QPixmap pixmap)
+{
+    this->ui->left_camera->setPixmap(pixmap);
+}
+
+void CameraController::show_right_image(QPixmap pixmap)
+{
+    this->ui->right_camera->setPixmap(pixmap);
+}
 

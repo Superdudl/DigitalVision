@@ -1,6 +1,7 @@
 #ifndef SHARECONTROLLER_H
 #define SHARECONTROLLER_H
 
+#include <windows.h>
 #include <QObject>
 #include <QLabel>
 #include <ui_mainwindow.h>
@@ -16,11 +17,13 @@ public:
     ~ShareThread();
 
     void run() override;
+    QLabel* shared_screen;
 
 private:
     std::shared_ptr<CameraController> camera_controller;
-    QLabel* shared_screen;
     QScreen* screen;
+signals:
+    void frame_ready(QPixmap pixmap);
 };
 
 class ShareController : public QObject
@@ -33,12 +36,13 @@ public:
 
 private:
     std::shared_ptr<CameraController> camera_controller;
-    std::shared_ptr<ShareThread> thread;
+    std::unique_ptr<ShareThread> thread;
     BOOL running = FALSE;
 signals:
 
 private slots:
     void share_screen();
+    void update_image(QPixmap pixmap);
 };
 
 #endif // SHARECONTROLLER_H

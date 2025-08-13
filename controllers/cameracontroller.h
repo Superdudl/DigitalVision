@@ -8,9 +8,10 @@
 #include <QThread>
 #include <QPixmap>
 #include <vector>
+#include <opencv2/opencv.hpp>
 #include "ui_mainwindow.h"
 #include <memory>
-#include <QReadWriteLock>
+#include <QMutex>
 
 class CameraController;
 
@@ -27,9 +28,12 @@ protected:
     tSdkCameraCapbility* CameraInfo;
     Ui::MainWindow* ui;
     CameraController* controller;
+    QImage left_frame;
+    QImage right_frame;
 
 signals:
-
+    void grabbed_left_image(QPixmap pixmap);
+    void grabbed_right_image(QPixmap pixmap);
 };
 
 class CameraController : public QObject
@@ -68,24 +72,26 @@ public:
     Ui::MainWindow* ui = nullptr;
 
     // Доступные потоки под камеры (максимум 2)
-    std::vector<std::unique_ptr<CameraThread>> threads;
+    std::vector<std::shared_ptr<CameraThread>> threads;
 
     // Переменные для хранения изображений с камер
-    QImage left_image;
-    QImage right_image;
+    cv::Mat left_image;
+    cv::Mat right_image;
 
-    void setRightImage(QImage image);
-    void setLeftImage(QImage image);
+    void setRightImage(BYTE* pFrameBuffer, tSdkFrameHead *FrameHead);
+    void setLeftImage(BYTE* pFrameBuffer, tSdkFrameHead *FrameHead);
 
-    QImage getRightImage();
-    QImage getLeftImage();
+    cv::Mat getRightImage();
+    cv::Mat getLeftImage();
 
 private:
-    QReadWriteLock left_mutex;
-    QReadWriteLock right_mutex;
+    QMutex left_mutex;
+    QMutex right_mutex;
 
 private slots:
     void connect_camera();
+    void show_left_image(QPixmap pixmap);
+    void show_right_image(QPixmap pixmap);
 };
 
 #endif // CAMERACONTROLLER_H
