@@ -9,6 +9,10 @@
 MainController::MainController(MainWindow* window, QObject *parent)
     : QObject{parent}, window{window}
 {
+    m_doubleValidator.setNotation(QDoubleValidator::StandardNotation);
+    window->ui->Exposure_edit->setValidator(&m_doubleValidator);
+    window->ui->Gain_edit->setValidator(&m_doubleValidator);
+
     //-------------------------------- СЛОТЫ -------------------------------------
     connect(window, &MainWindow::windowClosing, this, &MainController::close);
     //----------------------------------------------------------------------------

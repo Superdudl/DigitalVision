@@ -214,17 +214,28 @@
            </widget>
           </item>
           <item row="0" column="2">
-           <widget class="QLineEdit" name="Exposure_edit"/>
+           <widget class="QLineEdit" name="Exposure_edit">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
+           </widget>
           </item>
           <item row="0" column="3">
            <widget class="QCheckBox" name="AeState">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
             <property name="text">
              <string>Авто</string>
             </property>
            </widget>
           </item>
           <item row="2" column="2">
-           <widget class="QLineEdit" name="Gain_edit"/>
+           <widget class="QLineEdit" name="Gain_edit">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
+           </widget>
           </item>
           <item row="1" column="2">
            <spacer name="verticalSpacer_3">

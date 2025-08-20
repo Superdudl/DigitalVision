@@ -1,5 +1,4 @@
 #include "displaycontroller.h"
-#include <cstdlib>
 #include <QPushButton>
 #include <QApplication>
 #include <QScreen>
@@ -79,8 +78,6 @@ void ShareController::update_image(QPixmap pixmap)
 
 void ShareController::share_screen()
 {
-    system("DisplaySwitch.exe /extend");
-
     if (!running)
     {
         running = TRUE;

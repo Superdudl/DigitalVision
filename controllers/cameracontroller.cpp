@@ -2,11 +2,14 @@
 #include <QMessageBox>
 #include <QDebug>
 #include <ui_mainwindow.h>
+#include <QLineEdit>
 #include <QComboBox>
+#include <QCheckBox>
 #include <QPushButton>
 #include <QPixmap>
 #include <QMutexLocker>
 #include <QString>
+#include <algorithm>
 
 CameraThread::CameraThread(int *hCamera, Ui::MainWindow* ui, CameraController *parent)
 {
@@ -20,6 +23,7 @@ CameraThread::CameraThread(int *hCamera, Ui::MainWindow* ui, CameraController *p
 CameraThread::~CameraThread()
 {
     qDebug() << "Вызван деструктор потока";
+    CameraStop(*hCamera);
 }
 
 void CameraThread::run()
@@ -77,7 +81,11 @@ CameraController::CameraController(Ui::MainWindow* m_ui, QObject *parent) : QObj
 
     //----------------------------------------  СЛОТЫ  ------------------------------------------------
     connect(ui->connect_button, &QPushButton::clicked, this, &CameraController::connect_camera);
+    connect(ui->disconnect_button, &QPushButton::clicked, this, &CameraController::disconnect_camera);
     connect(ui->DeviceList, &QComboBox::activated, this, &CameraController::update_ui);
+    connect(ui->AeState, &QCheckBox::clicked, this, &CameraController::clicked_AeState);
+    connect(ui->Exposure_edit, &QLineEdit::editingFinished, this, &CameraController::edit_Exposure);
+    connect(ui->Gain_edit, &QLineEdit::editingFinished, this, &CameraController::edit_Gain);
     //-------------------------------------------------------------------------------------------------
 
     if (this->CameraNums < 1)
@@ -182,6 +190,35 @@ void CameraController::getCameraParams(int *index)
 }
 
 //--------------------------------------------------------------- СЛОТЫ -------------------------------------------------------------------
+void CameraController::edit_Gain()
+{
+    auto index = ui->DeviceList->currentIndex();
+    auto str = ui->Gain_edit->text();
+    str.replace(',', '.');
+    auto value = str.toFloat();
+    value = std::clamp(value, params.at(index).GainMin, params.at(index).GainMax);
+    CameraSetAnalogGainX(hCamera.at(index), value);
+    update_ui();
+}
+
+void CameraController::edit_Exposure()
+{
+    auto index = ui->DeviceList->currentIndex();
+    auto str = ui->Exposure_edit->text();
+    str.replace(',', '.');
+    auto value = str.toDouble();
+    value = std::clamp(value, params.at(index).ExposureMin, params.at(index).ExposureMax);
+    CameraSetExposureTime(hCamera.at(index), value);
+    update_ui();
+}
+
+void CameraController::clicked_AeState()
+{
+    auto index = ui->DeviceList->currentIndex();
+    CameraSetAeState(hCamera.at(index), ui->AeState->isChecked());
+    update_ui();
+}
+
 void CameraController::update_ui()
 {
     if (hCamera.size() < 1) return;
@@ -211,17 +248,33 @@ void CameraController::update_ui()
     if (!params->AeState)
     {
         ui->Exposure_edit->setEnabled(TRUE);
-        ui->Exposure_edit->setText(QString::number(params->Exposure, 'f', 1));
+        ui->Exposure_edit->clear();
+        auto value = QString::number(params->Exposure, 'f', 1);
+        value.replace('.', ',');
+        ui->Exposure_edit->insert(value);
+
         ui->Gain_edit->setEnabled(TRUE);
-        ui->Gain_edit->setText(QString::number(params->Gain, 'f', 1));
+        ui->Gain_edit->clear();
+        value = QString::number(params->Gain, 'f', 1);
+        value.replace('.', ',');
+        ui->Gain_edit->insert(value);
+
         ui->AeState->setChecked(FALSE);
     }
     else
     {
         ui->Exposure_edit->setEnabled(FALSE);
-        ui->Exposure_edit->setText(QString::number(params->Exposure, 'f', 1));
+        ui->Exposure_edit->clear();
+        auto value = QString::number(params->Exposure, 'f', 1);
+        value.replace('.', ',');
+        ui->Exposure_edit->insert(value);
+
         ui->Gain_edit->setEnabled(FALSE);
-        ui->Gain_edit->setText(QString::number(params->Gain, 'f', 1));
+        ui->Gain_edit->clear();
+        value = QString::number(params->Gain, 'f', 1);
+        value.replace('.', ',');
+        ui->Gain_edit->insert(value);
+
         ui->AeState->setChecked(TRUE);
     }
 }
@@ -237,7 +290,6 @@ void CameraController::connect_camera()
     // Максимум 2 потока
     if (!CameraIsActive.at(index))
     {
-        CameraSetAeState(hCamera.at(index), TRUE);
         CameraGetCapability(hCamera.at(index), &CameraInfo.at(index));
         CameraSetIspOutFormat(hCamera.at(index), CAMERA_MEDIA_TYPE_BGR8);
 
@@ -251,6 +303,20 @@ void CameraController::connect_camera()
         threads.at(index)->start();
         update_ui();
     }
+}
+
+void CameraController::disconnect_camera()
+{
+    auto index = ui->DeviceList->currentIndex();
+    if (CameraIsActive.at(index))
+    {
+        threads.at(index)->requestInterruption();
+        threads.at(index)->wait();
+        CameraIsActive.at(index) = FALSE;
+        auto path = QString("SN%2.config").arg(CameraList.at(index).acSn).toStdString();
+        CameraSaveParameterToFile(hCamera.at(index), path.data());
+    }
+    update_ui();
 }
 
 void CameraController::show_left_image(QPixmap pixmap)

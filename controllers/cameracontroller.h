@@ -94,8 +94,12 @@ private:
     void getCameraParams(int *index);
 
 private slots:
+    void disconnect_camera();
     void connect_camera();
     void update_ui();
+    void clicked_AeState();
+    void edit_Exposure();
+    void edit_Gain();
     void show_left_image(QPixmap pixmap);
     void show_right_image(QPixmap pixmap);
 };

@@ -6,6 +6,7 @@
 #include "cameracontroller.h"
 #include "displaycontroller.h"
 #include <memory>
+#include <QDoubleValidator>
 
 class MainController : public QObject
 {
@@ -22,6 +23,8 @@ public:
 private:
     std::shared_ptr<CameraController> camera_controller;
     ShareController* share_controller;
+
+    QDoubleValidator m_doubleValidator;
 private slots:
     void close();
 };
