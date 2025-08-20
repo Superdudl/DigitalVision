@@ -3,9 +3,8 @@
 
 #include <QObject>
 #include "../view/mainwindow.h"
-#include "ui_mainwindow.h"
 #include "cameracontroller.h"
-#include "sharecontroller.h"
+#include "displaycontroller.h"
 #include <memory>
 
 class MainController : public QObject

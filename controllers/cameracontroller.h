@@ -50,10 +50,10 @@ public:
         FLOAT GainMin;
         FLOAT GainStep;
 
-        FLOAT Exposure;
-        FLOAT ExposureMax;
-        FLOAT ExposureMin;
-        FLOAT ExposureStep;
+        double Exposure;
+        double ExposureMax;
+        double ExposureMin;
+        double ExposureStep;
 
         BOOL AeState;
     };
@@ -78,7 +78,9 @@ public:
     cv::Mat left_image;
     cv::Mat right_image;
 
+    // Копирование изображений с камеры в cv::Mat left_image
     void setRightImage(BYTE* pFrameBuffer, tSdkFrameHead *FrameHead);
+    // Копирование изображений с камеры в cv::Mat right_image
     void setLeftImage(BYTE* pFrameBuffer, tSdkFrameHead *FrameHead);
 
     cv::Mat getRightImage();
@@ -88,8 +90,12 @@ private:
     QMutex left_mutex;
     QMutex right_mutex;
 
+    // Получение параметров камеры
+    void getCameraParams(int *index);
+
 private slots:
     void connect_camera();
+    void update_ui();
     void show_left_image(QPixmap pixmap);
     void show_right_image(QPixmap pixmap);
 };

@@ -1,4 +1,4 @@
-#include "sharecontroller.h"
+#include "displaycontroller.h"
 #include <cstdlib>
 #include <QPushButton>
 #include <QApplication>

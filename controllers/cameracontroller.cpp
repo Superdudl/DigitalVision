@@ -77,6 +77,7 @@ CameraController::CameraController(Ui::MainWindow* m_ui, QObject *parent) : QObj
 
     //----------------------------------------  СЛОТЫ  ------------------------------------------------
     connect(ui->connect_button, &QPushButton::clicked, this, &CameraController::connect_camera);
+    connect(ui->DeviceList, &QComboBox::activated, this, &CameraController::update_ui);
     //-------------------------------------------------------------------------------------------------
 
     if (this->CameraNums < 1)
@@ -97,6 +98,7 @@ CameraController::CameraController(Ui::MainWindow* m_ui, QObject *parent) : QObj
     CameraInfo.resize(CameraNums);
     hCamera.resize(CameraNums);
     threads.resize(THREADS_NUM);
+    params.resize(CameraNums);
     CameraIsActive.resize(CameraNums);
 
 
@@ -119,7 +121,7 @@ CameraController::CameraController(Ui::MainWindow* m_ui, QObject *parent) : QObj
         QString str = QString("%1 (SN:%2)").arg(CameraList.at(i).acFriendlyName, CameraList.at(i).acSn);
         ui->DeviceList->addItem(str);
     }
-
+    update_ui();
     qDebug() << "Найдено камер:" << CameraList.size();
 }
 
@@ -166,6 +168,64 @@ void CameraController::setRightImage(BYTE* pFrameBuffer, tSdkFrameHead *FrameHea
     right_image = cv::Mat(FrameHead->iHeight, FrameHead->iWidth, CV_8UC3, const_cast<uchar*>(pFrameBuffer),  FrameHead->iWidth * 3).clone();
 }
 
+void CameraController::getCameraParams(int *index)
+{
+    auto params = &this->params.at(*index);
+    auto hCamera = &this->hCamera.at(*index);
+    CameraGetAnalogGainX(*hCamera, &params->Gain);
+    CameraGetAnalogGainXRange(*hCamera, &params->GainMin, &params->GainMax, &params->GainStep);
+
+    CameraGetExposureTime(*hCamera, &params->Exposure);
+    CameraGetExposureTimeRange(*hCamera, &params->ExposureMin, &params->ExposureMax, &params->ExposureStep);
+
+    CameraGetAeState(*hCamera, &params->AeState);
+}
+
+//--------------------------------------------------------------- СЛОТЫ -------------------------------------------------------------------
+void CameraController::update_ui()
+{
+    if (hCamera.size() < 1) return;
+    auto index = ui->DeviceList->currentIndex();
+    getCameraParams(&index);
+    auto params = &this->params.at(index);
+
+    if (CameraIsActive.at(index))
+    {
+        ui->connect_button->setEnabled(FALSE);
+        ui->disconnect_button->setEnabled(TRUE);
+        ui->AeState->setEnabled(TRUE);
+    }
+    else
+    {
+        ui->connect_button->setEnabled(TRUE);
+        ui->disconnect_button->setEnabled(FALSE);
+        ui->Exposure_edit->clear();
+        ui->Exposure_edit->setEnabled(FALSE);
+        ui->Gain_edit->clear();
+        ui->Gain_edit->setEnabled(FALSE);
+        ui->AeState->setChecked(FALSE);
+        ui->AeState->setEnabled(FALSE);
+        return;
+    }
+
+    if (!params->AeState)
+    {
+        ui->Exposure_edit->setEnabled(TRUE);
+        ui->Exposure_edit->setText(QString::number(params->Exposure, 'f', 1));
+        ui->Gain_edit->setEnabled(TRUE);
+        ui->Gain_edit->setText(QString::number(params->Gain, 'f', 1));
+        ui->AeState->setChecked(FALSE);
+    }
+    else
+    {
+        ui->Exposure_edit->setEnabled(FALSE);
+        ui->Exposure_edit->setText(QString::number(params->Exposure, 'f', 1));
+        ui->Gain_edit->setEnabled(FALSE);
+        ui->Gain_edit->setText(QString::number(params->Gain, 'f', 1));
+        ui->AeState->setChecked(TRUE);
+    }
+}
+
 void CameraController::connect_camera()
 {
     if (hCamera.size() < 1) return;
@@ -189,6 +249,7 @@ void CameraController::connect_camera()
         connect(threads.at(index).get(), &CameraThread::grabbed_right_image, this, &CameraController::show_right_image, Qt::QueuedConnection);
         //---------------------------------------------------------------------------------------------------------------------------
         threads.at(index)->start();
+        update_ui();
     }
 }
 
