@@ -34,23 +34,25 @@ void CameraThread::run()
     BYTE* pFrameBuffer = (BYTE *)CameraAlignMalloc(FrameBufferSize, 16);
 
     tSdkFrameHead FrameHead;
+    BYTE *pRawData;
     QPixmap pixmap;
 
     while (!isInterruptionRequested())
     {
-        auto status = CameraGetImageBufferEx2(*hCamera, pFrameBuffer, 1, &FrameHead.iWidth, &FrameHead.iHeight, 2000);
+        // auto status = CameraGetImageBufferEx2(*hCamera, pFrameBuffer, 1, &FrameHead.iWidth, &FrameHead.iHeight, 2000);
+        auto status = CameraGetImageBuffer(*hCamera, &FrameHead, &pRawData, 2000);
 
         if (status == CAMERA_STATUS_SUCCESS)
         {
-            FrameHead.uiMediaType = CAMERA_MEDIA_TYPE_BGR8;
-            FrameHead.uBytes = FrameHead.iWidth * FrameHead.iHeight * 3;
+            CameraImageProcess(*hCamera, pRawData, pFrameBuffer, &FrameHead);
+            CameraReleaseImageBuffer(*hCamera, pRawData);
             QImage scaled_image;
             switch (*hCamera)
             {
             case 1:
-                left_frame = QImage(pFrameBuffer, FrameHead.iWidth, FrameHead.iHeight, FrameHead.iWidth * 3, QImage::Format::Format_RGB888);
+                left_frame = QImage(pFrameBuffer, FrameHead.iWidth, FrameHead.iHeight, FrameHead.iWidth * 3, QImage::Format::Format_BGR888);
                 controller->setLeftImage(pFrameBuffer, &FrameHead);
-                scaled_image = left_frame.scaled(ui->left_camera->size(), Qt::KeepAspectRatio);
+                scaled_image = left_frame.scaled(ui->left_camera->size(), Qt::KeepAspectRatio, Qt::FastTransformation);
                 pixmap = QPixmap::fromImage(scaled_image);
                 if (!pixmap.isNull())
                 {
@@ -58,9 +60,9 @@ void CameraThread::run()
                 }
                 break;
             case 2:
-                right_frame = QImage(pFrameBuffer, FrameHead.iWidth, FrameHead.iHeight, FrameHead.iWidth * 3, QImage::Format::Format_RGB888);
+                right_frame = QImage(pFrameBuffer, FrameHead.iWidth, FrameHead.iHeight, FrameHead.iWidth * 3, QImage::Format::Format_BGR888);
                 controller->setRightImage(pFrameBuffer, &FrameHead);
-                scaled_image = right_frame.scaled(ui->right_camera->size(), Qt::KeepAspectRatio);
+                scaled_image = right_frame.scaled(ui->right_camera->size(), Qt::KeepAspectRatio, Qt::FastTransformation);
                 pixmap = QPixmap::fromImage(scaled_image);
                 if (!pixmap.isNull())
                 {
@@ -315,6 +317,19 @@ void CameraController::disconnect_camera()
         CameraIsActive.at(index) = FALSE;
         auto path = QString("SN%2.config").arg(CameraList.at(index).acSn).toStdString();
         CameraSaveParameterToFile(hCamera.at(index), path.data());
+        QPixmap new_pixmap (1,1);
+        new_pixmap.fill(Qt::black);
+        switch (index)
+        {
+        case 0:
+            disconnect(threads.at(index).get(), &CameraThread::grabbed_left_image, this, &CameraController::show_left_image);
+            qApp->removePostedEvents(this, QEvent::MetaCall);
+            show_left_image(new_pixmap);
+        case 1:
+            disconnect(threads.at(index).get(), &CameraThread::grabbed_right_image, this, &CameraController::show_right_image);
+            qApp->removePostedEvents(this, QEvent::MetaCall);
+            show_right_image(new_pixmap);
+        }
     }
     update_ui();
 }
