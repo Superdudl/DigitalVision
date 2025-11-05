@@ -15,12 +15,20 @@
 
 class CameraController;
 
+enum class CameraPossition : int
+{
+    LEFT = 1,
+    RIGHT = 2
+};
+
 class CameraThread : public QThread
 {
     Q_OBJECT
 public:
     explicit CameraThread(int *hCamera, Ui::MainWindow* ui, CameraController* controller);
     ~CameraThread();
+    CameraPossition possition;
+    static inline bool flag_reversed = false;
 
 protected:
     void run() override;
@@ -31,9 +39,17 @@ protected:
     QImage left_frame;
     QImage right_frame;
 
+    UINT FrameBufferSize;
+    BYTE* pFrameBuffer;
+    tSdkFrameHead FrameHead;
+    BYTE *pRawData;
+
 signals:
     void grabbed_left_image(QPixmap pixmap);
     void grabbed_right_image(QPixmap pixmap);
+
+private slots:
+
 };
 
 class CameraController : public QObject
@@ -60,7 +76,7 @@ public:
 
     // Переменные камер
     int CameraNums = CameraEnumerateDeviceEx(); // количество подключенных камер
-    std::vector<int> hCamera; // хэнлеры камер
+    std::vector<int> hCamera; // хэндлеры камер
     std::vector<tSdkCameraDevInfo> CameraList; // внешние параметры камер
     std::vector<tSdkCameraCapbility> CameraInfo; // внутренние параметры камер
     std::vector<BOOL> CameraIsActive;
@@ -102,6 +118,7 @@ private slots:
     void edit_Gain();
     void show_left_image(QPixmap pixmap);
     void show_right_image(QPixmap pixmap);
+    void change_positions();
 };
 
 #endif // CAMERACONTROLLER_H

@@ -181,6 +181,13 @@
             </item>
            </layout>
           </item>
+          <item>
+           <widget class="QPushButton" name="changePositions">
+            <property name="text">
+             <string>Поменять местами</string>
+            </property>
+           </widget>
+          </item>
          </layout>
         </widget>
        </item>

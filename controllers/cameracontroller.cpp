@@ -10,6 +10,9 @@
 #include <QMutexLocker>
 #include <QString>
 #include <algorithm>
+#include <QSettings>
+
+auto qapp_settings = QSettings("settings.ini", QSettings::IniFormat);
 
 CameraThread::CameraThread(int *hCamera, Ui::MainWindow* ui, CameraController *parent)
 {
@@ -18,6 +21,9 @@ CameraThread::CameraThread(int *hCamera, Ui::MainWindow* ui, CameraController *p
     this->CameraInfo = &controller->CameraInfo.at(*hCamera - 1);
     this->ui = ui;
     qDebug() << "Поток создан";
+
+    FrameBufferSize = CameraInfo->sResolutionRange.iWidthMax * CameraInfo->sResolutionRange.iHeightMax *  3;
+    pFrameBuffer = (BYTE *)CameraAlignMalloc(FrameBufferSize, 16);
 }
 
 CameraThread::~CameraThread()
@@ -28,18 +34,25 @@ CameraThread::~CameraThread()
 
 void CameraThread::run()
 {
-    qDebug() << "Поток запущен";
     CameraPlay(*hCamera);
-    UINT FrameBufferSize = CameraInfo->sResolutionRange.iWidthMax * CameraInfo->sResolutionRange.iHeightMax *  3;
-    BYTE* pFrameBuffer = (BYTE *)CameraAlignMalloc(FrameBufferSize, 16);
-
-    tSdkFrameHead FrameHead;
-    BYTE *pRawData;
+    qDebug() << "Поток запущен";
     QPixmap pixmap;
+
+    flag_reversed = qapp_settings.value("camera/reversed", false).toBool();
+
+    if (flag_reversed)
+    {
+        if (*hCamera == 1) possition = CameraPossition::RIGHT;
+        if (*hCamera == 2) possition = CameraPossition::LEFT;
+    }
+    else
+    {
+        if (*hCamera == 1) possition = CameraPossition::LEFT;
+        if (*hCamera == 2) possition = CameraPossition::RIGHT;
+    }
 
     while (!isInterruptionRequested())
     {
-        // auto status = CameraGetImageBufferEx2(*hCamera, pFrameBuffer, 1, &FrameHead.iWidth, &FrameHead.iHeight, 2000);
         auto status = CameraGetImageBuffer(*hCamera, &FrameHead, &pRawData, 2000);
 
         if (status == CAMERA_STATUS_SUCCESS)
@@ -47,9 +60,9 @@ void CameraThread::run()
             CameraImageProcess(*hCamera, pRawData, pFrameBuffer, &FrameHead);
             CameraReleaseImageBuffer(*hCamera, pRawData);
             QImage scaled_image;
-            switch (*hCamera)
+            switch (possition)
             {
-            case 1:
+            case CameraPossition::LEFT:
                 left_frame = QImage(pFrameBuffer, FrameHead.iWidth, FrameHead.iHeight, FrameHead.iWidth * 3, QImage::Format::Format_BGR888);
                 controller->setLeftImage(pFrameBuffer, &FrameHead);
                 scaled_image = left_frame.scaled(ui->left_camera->size(), Qt::KeepAspectRatio, Qt::FastTransformation);
@@ -59,7 +72,7 @@ void CameraThread::run()
                     emit grabbed_left_image(pixmap);
                 }
                 break;
-            case 2:
+            case CameraPossition::RIGHT:
                 right_frame = QImage(pFrameBuffer, FrameHead.iWidth, FrameHead.iHeight, FrameHead.iWidth * 3, QImage::Format::Format_BGR888);
                 controller->setRightImage(pFrameBuffer, &FrameHead);
                 scaled_image = right_frame.scaled(ui->right_camera->size(), Qt::KeepAspectRatio, Qt::FastTransformation);
@@ -76,6 +89,8 @@ void CameraThread::run()
         }
     }
     qDebug() << "Выход из цикла";
+    CameraClearBuffer(*hCamera);
+    CameraStop(*hCamera);
 }
 
 CameraController::CameraController(Ui::MainWindow* m_ui, QObject *parent) : QObject(parent), ui{m_ui}
@@ -88,6 +103,7 @@ CameraController::CameraController(Ui::MainWindow* m_ui, QObject *parent) : QObj
     connect(ui->AeState, &QCheckBox::clicked, this, &CameraController::clicked_AeState);
     connect(ui->Exposure_edit, &QLineEdit::editingFinished, this, &CameraController::edit_Exposure);
     connect(ui->Gain_edit, &QLineEdit::editingFinished, this, &CameraController::edit_Gain);
+    connect(ui->changePositions, &QPushButton::clicked, this, &CameraController::change_positions);
     //-------------------------------------------------------------------------------------------------
 
     if (this->CameraNums < 1)
@@ -296,7 +312,8 @@ void CameraController::connect_camera()
         CameraSetIspOutFormat(hCamera.at(index), CAMERA_MEDIA_TYPE_BGR8);
 
         auto pCamera = &hCamera.at(index);
-        threads.at(index) = std::make_shared<CameraThread>(pCamera, ui, this);
+        if (threads.at(index) == nullptr)
+            threads.at(index) = std::make_shared<CameraThread>(pCamera, ui, this);
         CameraIsActive.at(index) = TRUE;
         //----------------------------------------  СЛОТЫ  --------------------------------------------------------------------------
         connect(threads.at(index).get(), &CameraThread::grabbed_left_image, this, &CameraController::show_left_image, Qt::QueuedConnection);
@@ -313,19 +330,22 @@ void CameraController::disconnect_camera()
     if (CameraIsActive.at(index))
     {
         threads.at(index)->requestInterruption();
-        threads.at(index)->wait();
+        threads.at(index)->wait(500);
         CameraIsActive.at(index) = FALSE;
         auto path = QString("SN%2.config").arg(CameraList.at(index).acSn).toStdString();
         CameraSaveParameterToFile(hCamera.at(index), path.data());
         QPixmap new_pixmap (1,1);
         new_pixmap.fill(Qt::black);
-        switch (index)
+
+        auto possition = threads.at(index)->possition;
+
+        switch (possition)
         {
-        case 0:
+        case CameraPossition::LEFT:
             disconnect(threads.at(index).get(), &CameraThread::grabbed_left_image, this, &CameraController::show_left_image);
             qApp->removePostedEvents(this, QEvent::MetaCall);
             show_left_image(new_pixmap);
-        case 1:
+        case CameraPossition::RIGHT:
             disconnect(threads.at(index).get(), &CameraThread::grabbed_right_image, this, &CameraController::show_right_image);
             qApp->removePostedEvents(this, QEvent::MetaCall);
             show_right_image(new_pixmap);
@@ -344,3 +364,23 @@ void CameraController::show_right_image(QPixmap pixmap)
     this->ui->right_camera->setPixmap(pixmap);
 }
 
+void CameraController::change_positions()
+{
+    qDebug() << qapp_settings.fileName();
+    qapp_settings.setValue("camera/reversed", !CameraThread::flag_reversed);
+    for (auto thread : threads)
+    {
+        if (thread != nullptr && thread->isRunning())
+        {
+            thread->requestInterruption();
+            thread->wait(500);
+            QPixmap new_pixmap (1,1);
+            new_pixmap.fill(Qt::black);
+            qApp->removePostedEvents(this, QEvent::MetaCall);
+            show_left_image(new_pixmap);
+            show_right_image(new_pixmap);
+            thread->start();
+        }
+    }
+    update_ui();
+}

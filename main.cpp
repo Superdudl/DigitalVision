@@ -1,10 +1,10 @@
 #include <QApplication>
+#include <QSettings>
 #include "view/mainwindow.h"
 #include <QScreen>
 #include <QDebug>
 #include "controllers/maincontroller.h"
 #include <cstdlib>
-
 #include <memory>
 
 int main(int argc, char* argv[])
@@ -13,7 +13,6 @@ int main(int argc, char* argv[])
     auto app = std::make_unique<QApplication>(argc, argv);
     auto window = new MainWindow();
     window->setWindowTitle("DigitalVision");
-    auto ui = window->ui;
 
     auto main_controller = std::make_unique<MainController>(window, window);
 

@@ -40,11 +40,10 @@ void ShareThread::run()
             cv::Mat final_image;
             cv::hconcat(cv_left_image, cv_right_image, final_image);
             QImage qimage(final_image.data, final_image.cols, final_image.rows, final_image.step, QImage::Format_BGR888);
-            pixmap = QPixmap::fromImage(qimage.scaled(screen->size(), Qt::KeepAspectRatio));
+            pixmap = QPixmap::fromImage(qimage.scaled(screen->size(), Qt::KeepAspectRatio, Qt::FastTransformation));
         }
 
         if (!pixmap.isNull()){
-            // shared_screen->setPixmap(pixmap);
             emit frame_ready(pixmap);
         }
     }
