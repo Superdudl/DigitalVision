@@ -216,15 +216,8 @@
             </property>
            </widget>
           </item>
-          <item row="2" column="0">
-           <widget class="QLabel" name="Gain_label">
-            <property name="text">
-             <string>Усиление</string>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="2">
-           <widget class="QLineEdit" name="Exposure_edit">
+          <item row="2" column="2">
+           <widget class="QLineEdit" name="Gain_edit">
             <property name="enabled">
              <bool>false</bool>
             </property>
@@ -237,13 +230,6 @@
             </property>
             <property name="text">
              <string>Авто</string>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="2">
-           <widget class="QLineEdit" name="Gain_edit">
-            <property name="enabled">
-             <bool>false</bool>
             </property>
            </widget>
           </item>
@@ -262,6 +248,20 @@
              </size>
             </property>
            </spacer>
+          </item>
+          <item row="0" column="2">
+           <widget class="QLineEdit" name="Exposure_edit">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="0">
+           <widget class="QLabel" name="Gain_label">
+            <property name="text">
+             <string>Усиление</string>
+            </property>
+           </widget>
           </item>
           <item row="0" column="1">
            <spacer name="horizontalSpacer">
@@ -287,17 +287,49 @@
          <property name="title">
           <string>Дисплеи</string>
          </property>
-         <layout class="QVBoxLayout" name="verticalLayout_3">
-          <item>
-           <widget class="QComboBox" name="DisplayCombo"/>
-          </item>
-          <item>
+         <layout class="QGridLayout" name="gridLayout_3" columnstretch="0,0">
+          <property name="sizeConstraint">
+           <enum>QLayout::SizeConstraint::SetDefaultConstraint</enum>
+          </property>
+          <item row="2" column="0" colspan="2">
            <widget class="QPushButton" name="start_button">
             <property name="styleSheet">
              <string notr="true"/>
             </property>
             <property name="text">
              <string>ЗАПУСК</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1">
+           <widget class="QComboBox" name="DisplayRight"/>
+          </item>
+          <item row="0" column="1">
+           <widget class="QComboBox" name="DisplayLeft"/>
+          </item>
+          <item row="0" column="0">
+           <widget class="QLabel" name="label">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="text">
+             <string>Левый</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="0">
+           <widget class="QLabel" name="label_2">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="text">
+             <string>Правый</string>
             </property>
            </widget>
           </item>
@@ -328,7 +360,7 @@
      <x>0</x>
      <y>0</y>
      <width>1096</width>
-     <height>25</height>
+     <height>21</height>
     </rect>
    </property>
   </widget>

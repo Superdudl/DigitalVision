@@ -17,13 +17,14 @@ public:
     ~ShareThread();
 
     void run() override;
-    QLabel* shared_screen;
+    QLabel* left_shared_screen;
+    QLabel* right_shared_screen;
 
 private:
     std::shared_ptr<CameraController> camera_controller;
     QScreen* screen;
 signals:
-    void frame_ready(QPixmap pixmap);
+    void frame_ready(QPixmap left_pixmap, QPixmap right_pixmap);
 };
 
 class ShareController : public QObject
@@ -42,7 +43,7 @@ signals:
 
 private slots:
     void share_screen();
-    void update_image(QPixmap pixmap);
+    void update_image(QPixmap left_pixmap, QPixmap right_pixmap);
 };
 
 #endif // SHARECONTROLLER_H

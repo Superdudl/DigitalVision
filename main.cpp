@@ -7,6 +7,8 @@
 #include <cstdlib>
 #include <memory>
 
+auto qapp_settings = QSettings("settings.ini", QSettings::IniFormat);
+
 int main(int argc, char* argv[])
 {
     system("DisplaySwitch.exe /extend");

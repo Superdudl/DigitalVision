@@ -12,7 +12,7 @@
 #include <algorithm>
 #include <QSettings>
 
-auto qapp_settings = QSettings("settings.ini", QSettings::IniFormat);
+extern QSettings qapp_settings;
 
 CameraThread::CameraThread(int *hCamera, Ui::MainWindow* ui, CameraController *parent)
 {
@@ -374,9 +374,9 @@ void CameraController::change_positions()
         {
             thread->requestInterruption();
             thread->wait(500);
+            qApp->removePostedEvents(this, QEvent::MetaCall);
             QPixmap new_pixmap (1,1);
             new_pixmap.fill(Qt::black);
-            qApp->removePostedEvents(this, QEvent::MetaCall);
             show_left_image(new_pixmap);
             show_right_image(new_pixmap);
             thread->start();

@@ -38,7 +38,8 @@ void MainController::find_screens()
     for (int i = 0; i < screens.count(); ++i)
     {
         auto screen = screens.at(i);
-        window->ui->DisplayCombo->addItem(screen->name());
+        window->ui->DisplayLeft->addItem(screen->name());
+        window->ui->DisplayRight->addItem(screen->name());
     }
 }
 
