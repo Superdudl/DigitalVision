@@ -27,7 +27,7 @@ qt_standard_project_setup()
 
 file(GLOB_RECURSE CONTROLLER_SOURCES "controllers/*.cpp" "controllers/*.h")
 file(GLOB_RECURSE VIEW_SOURCES "view/*.cpp" "view/*.h" "view/*.ui")
-file(GLOB_RECURSE UTILS_SOURCES "view/*.cpp" "view/*.h")
+file(GLOB_RECURSE UTILS_SOURCES "utils/*.cpp" "utils/*.h")
 
 qt_add_executable(DigitalVision
     WIN32 MACOSX_BUNDLE
