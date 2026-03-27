@@ -1,7 +1,6 @@
 #include "cameracontroller.h"
 #include <QMessageBox>
 #include <QDebug>
-#include <ui_mainwindow.h>
 #include <QLineEdit>
 #include <QComboBox>
 #include <QCheckBox>

@@ -6,25 +6,44 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/bin/${CMAKE_BUILD_TYPE}")
+set(CMAKE_AUTOUIC_SEARCH_PATHS "${CMAKE_CURRENT_SOURCE_DIR}/view/")
 
-add_subdirectory(controllers/)
-add_subdirectory(utils/)
-add_subdirectory(view/)
+find_package(Qt6 REQUIRED COMPONENTS Core Widgets Gui)
+find_package(OpenCV REQUIRED)
 
-find_package(Qt6 6.5 REQUIRED COMPONENTS Core Widgets)
+add_library(MVCAMSDK SHARED IMPORTED)
+set(MVCAMSDK_DIR "" CACHE PATH "Path to MVCAMSDK directory")
+
+if (NOT MVCAMSDK_DIR)
+    message(FATAL_ERROR "Set MVCAMSDK_DIR to MVCAMSDK directory")
+endif()
+
+set_target_properties(MVCAMSDK PROPERTIES
+    IMPORTED_IMPLIB "${MVCAMSDK_DIR}/SDK/X64/MVCAMSDK_X64.lib"
+    IMPORTED_LOCATION "${MVCAMSDK_DIR}/SDK/X64/MVCAMSDK_X64.dll"
+    INTERFACE_INCLUDE_DIRECTORIES "${MVCAMSDK_DIR}/Demo/VC++/Include")
 
 qt_standard_project_setup()
+
+file(GLOB_RECURSE CONTROLLER_SOURCES "controllers/*.cpp" "controllers/*.h")
+file(GLOB_RECURSE VIEW_SOURCES "view/*.cpp" "view/*.h" "view/*.ui")
+file(GLOB_RECURSE UTILS_SOURCES "view/*.cpp" "view/*.h")
 
 qt_add_executable(DigitalVision
     WIN32 MACOSX_BUNDLE
     main.cpp
+    ${CONTROLLER_SOURCES}
+    ${VIEW_SOURCES}
+    ${UTILS_SOURCES}
 )
 
 target_link_libraries(DigitalVision
     PRIVATE
-        Qt::Core
-        AppView
-        AppController
+        Qt6::Core
+        Qt6::Gui
+        Qt6::Widgets
+        ${OpenCV_LIBS}
+        MVCAMSDK
 )
 
 include(GNUInstallDirs)

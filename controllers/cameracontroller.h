@@ -4,12 +4,12 @@
 
 #include <windows.h>
 #include "CameraApi.h"
+#include <ui_mainwindow.h>
 #include <QObject>
 #include <QThread>
 #include <QPixmap>
 #include <vector>
 #include <opencv2/opencv.hpp>
-#include "ui_mainwindow.h"
 #include <memory>
 #include <QMutex>
 
