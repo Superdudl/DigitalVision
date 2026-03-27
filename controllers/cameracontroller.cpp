@@ -59,12 +59,12 @@ void CameraThread::run()
             CameraImageProcess(*hCamera, pRawData, pFrameBuffer, &FrameHead);
             CameraReleaseImageBuffer(*hCamera, pRawData);
             QImage scaled_image;
+            auto frame = QImage(pFrameBuffer, FrameHead.iWidth, FrameHead.iHeight, FrameHead.iWidth * 3, QImage::Format::Format_BGR888);
             switch (possition)
             {
             case CameraPossition::LEFT:
-                left_frame = QImage(pFrameBuffer, FrameHead.iWidth, FrameHead.iHeight, FrameHead.iWidth * 3, QImage::Format::Format_BGR888);
                 controller->setLeftImage(pFrameBuffer, &FrameHead);
-                scaled_image = left_frame.scaled(ui->left_camera->size(), Qt::KeepAspectRatio, Qt::FastTransformation);
+                scaled_image = frame.scaled(ui->left_camera->size(), Qt::KeepAspectRatio, Qt::FastTransformation);
                 pixmap = QPixmap::fromImage(scaled_image);
                 if (!pixmap.isNull())
                 {
@@ -72,9 +72,8 @@ void CameraThread::run()
                 }
                 break;
             case CameraPossition::RIGHT:
-                right_frame = QImage(pFrameBuffer, FrameHead.iWidth, FrameHead.iHeight, FrameHead.iWidth * 3, QImage::Format::Format_BGR888);
                 controller->setRightImage(pFrameBuffer, &FrameHead);
-                scaled_image = right_frame.scaled(ui->right_camera->size(), Qt::KeepAspectRatio, Qt::FastTransformation);
+                scaled_image = frame.scaled(ui->right_camera->size(), Qt::KeepAspectRatio, Qt::FastTransformation);
                 pixmap = QPixmap::fromImage(scaled_image);
                 if (!pixmap.isNull())
                 {
