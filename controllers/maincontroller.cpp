@@ -13,11 +13,12 @@ MainController::MainController(MainWindow* window, QObject *parent)
     window->ui->Exposure_edit->setValidator(&m_doubleValidator);
     window->ui->Gain_edit->setValidator(&m_doubleValidator);
 
+    connect_controllers();
+    find_screens();
+
     //-------------------------------- СЛОТЫ -------------------------------------
     connect(window, &MainWindow::windowClosing, this, &MainController::close);
     //----------------------------------------------------------------------------
-    find_screens();
-    connect_controllers();
 }
 
 MainController::~MainController()

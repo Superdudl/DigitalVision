@@ -43,6 +43,7 @@ signals:
 
 private slots:
     void share_screen();
+    void stop_sharing();
     void update_image(QPixmap left_pixmap, QPixmap right_pixmap);
 };
 

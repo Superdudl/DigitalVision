@@ -57,6 +57,7 @@ void ShareThread::run()
             emit frame_ready(left_pixmap, right_pixmap);
         }
     }
+    return;
 }
 
 ShareController::ShareController(std::shared_ptr<CameraController> camera_controller, QObject *parent) : QObject{parent}
@@ -95,6 +96,42 @@ void ShareController::share_screen()
         thread->start();
         //----------------------------------------  СЛОТЫ  --------------------------------------------------------------------------
         connect(thread.get(), &ShareThread::frame_ready, this, &ShareController::update_image, Qt::QueuedConnection);
+        connect(camera_controller->ui->stop_button, &QPushButton::clicked, this, &ShareController::stop_sharing);
         //---------------------------------------------------------------------------------------------------------------------------
     }
+    return;
 }
+
+void ShareController::stop_sharing()
+{
+    if (running)
+    {
+        thread->requestInterruption();
+        thread->wait();
+        thread.reset();
+        running = FALSE;
+    }
+    return;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

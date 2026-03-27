@@ -291,6 +291,9 @@
           <property name="sizeConstraint">
            <enum>QLayout::SizeConstraint::SetDefaultConstraint</enum>
           </property>
+          <item row="1" column="1">
+           <widget class="QComboBox" name="DisplayRight"/>
+          </item>
           <item row="2" column="0" colspan="2">
            <widget class="QPushButton" name="start_button">
             <property name="styleSheet">
@@ -301,8 +304,18 @@
             </property>
            </widget>
           </item>
-          <item row="1" column="1">
-           <widget class="QComboBox" name="DisplayRight"/>
+          <item row="1" column="0">
+           <widget class="QLabel" name="label_2">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="text">
+             <string>Правый</string>
+            </property>
+           </widget>
           </item>
           <item row="0" column="1">
            <widget class="QComboBox" name="DisplayLeft"/>
@@ -320,16 +333,10 @@
             </property>
            </widget>
           </item>
-          <item row="1" column="0">
-           <widget class="QLabel" name="label_2">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
+          <item row="3" column="0" colspan="2">
+           <widget class="QPushButton" name="stop_button">
             <property name="text">
-             <string>Правый</string>
+             <string>СТОП</string>
             </property>
            </widget>
           </item>
