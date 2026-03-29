@@ -1,4 +1,5 @@
 #include "displaycontroller.h"
+#include <QReadWriteLock>
 #include <QPushButton>
 #include <QApplication>
 #include <QScreen>
@@ -6,7 +7,6 @@
 #include <QDebug>
 
 ShareThread::ShareThread(std::shared_ptr<CameraController> camera_controller, QObject *parent)
-
 {
     this->camera_controller = camera_controller;
     auto left_index = camera_controller->ui->DisplayLeft->currentIndex();
@@ -39,22 +39,21 @@ ShareThread::~ShareThread()
 void ShareThread::run()
 {
     QPixmap left_pixmap, right_pixmap;
+
     while (!isInterruptionRequested())
     {
-        if (!camera_controller->getLeftImage().empty() && !camera_controller->getRightImage().empty())
         {
-            auto cv_left_image = camera_controller->getLeftImage();
-            auto cv_right_image = camera_controller->getRightImage();
+            QReadLocker lockL(camera_controller->getLeftMutex());
+            QReadLocker lockR(camera_controller->getRightMutex());
 
-            QImage q_left_image(cv_left_image.data, cv_left_image.cols, cv_left_image.rows, cv_left_image.step, QImage::Format_BGR888);
-            left_pixmap = QPixmap::fromImage(q_left_image.scaled(screen->size(), Qt::KeepAspectRatio, Qt::FastTransformation));
+            left_pixmap = camera_controller->getLeftImage();
+            right_pixmap = camera_controller->getRightImage();
 
-            QImage q_right_image(cv_right_image.data, cv_right_image.cols, cv_right_image.rows, cv_right_image.step, QImage::Format_BGR888);
-            right_pixmap = QPixmap::fromImage(q_right_image.scaled(screen->size(), Qt::KeepAspectRatio, Qt::FastTransformation));
-        }
-
-        if (!left_pixmap.isNull() && !right_pixmap.isNull()){
-            emit frame_ready(left_pixmap, right_pixmap);
+            if (!left_pixmap.isNull() && !right_pixmap.isNull()){
+                left_pixmap = left_pixmap.scaled(left_shared_screen->size(), Qt::KeepAspectRatio);
+                right_pixmap = right_pixmap.scaled(right_shared_screen->size(), Qt::KeepAspectRatio);
+                emit frame_ready(left_pixmap, right_pixmap);
+            }
         }
     }
     return;
