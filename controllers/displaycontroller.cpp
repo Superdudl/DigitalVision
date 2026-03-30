@@ -20,6 +20,7 @@ ShareThread::ShareThread(std::shared_ptr<CameraController> camera_controller, QO
     screen = screens.at(left_index);
     auto geometry = screens.at(left_index)->geometry();
     left_shared_screen->move(geometry.x(), geometry.y());
+    left_shared_screen->setAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
     left_shared_screen->showFullScreen();
 
     right_shared_screen = new QLabel;
@@ -27,6 +28,7 @@ ShareThread::ShareThread(std::shared_ptr<CameraController> camera_controller, QO
     screen = screens.at(right_index);
     geometry = screens.at(right_index)->geometry();
     right_shared_screen->move(geometry.x(), geometry.y());
+    right_shared_screen->setAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
     right_shared_screen->showFullScreen();
 }
 
@@ -49,11 +51,12 @@ void ShareThread::run()
             left_pixmap = camera_controller->getLeftImage();
             right_pixmap = camera_controller->getRightImage();
 
-            if (!left_pixmap.isNull() && !right_pixmap.isNull()){
-                left_pixmap = left_pixmap.scaled(left_shared_screen->size(), Qt::KeepAspectRatio);
-                right_pixmap = right_pixmap.scaled(right_shared_screen->size(), Qt::KeepAspectRatio);
-                emit frame_ready(left_pixmap, right_pixmap);
-            }
+            if (!left_pixmap.isNull())
+                left_pixmap = left_pixmap.scaled(left_shared_screen->size(), Qt::KeepAspectRatio, Qt::FastTransformation);
+            if (!right_pixmap.isNull())
+                right_pixmap = right_pixmap.scaled(right_shared_screen->size(), Qt::KeepAspectRatio, Qt::FastTransformation);
+
+            emit frame_ready(left_pixmap, right_pixmap);
         }
     }
     return;
@@ -80,12 +83,6 @@ void ShareController::close()
     delete this;
 }
 
-void ShareController::update_image(QPixmap left_pixmap, QPixmap right_pixmap)
-{
-    thread->left_shared_screen->setPixmap(left_pixmap);
-    thread->right_shared_screen->setPixmap(right_pixmap);
-}
-
 void ShareController::share_screen()
 {
     if (!running)
@@ -94,17 +91,27 @@ void ShareController::share_screen()
         thread = std::make_unique<ShareThread>(camera_controller);
         thread->start();
         //----------------------------------------  СЛОТЫ  --------------------------------------------------------------------------
-        connect(thread.get(), &ShareThread::frame_ready, this, &ShareController::update_image, Qt::QueuedConnection);
         connect(camera_controller->ui->stop_button, &QPushButton::clicked, this, &ShareController::stop_sharing);
+        connect(thread.get(), &ShareThread::frame_ready, this, &ShareController::update_frames, Qt::QueuedConnection);
         //---------------------------------------------------------------------------------------------------------------------------
     }
     return;
+}
+
+void ShareController::update_frames(QPixmap left_frame, QPixmap right_frame)
+{
+    if (!left_frame.isNull())
+        thread->left_shared_screen->setPixmap(left_frame);
+    if (!right_frame.isNull())
+        thread->right_shared_screen->setPixmap(right_frame);
 }
 
 void ShareController::stop_sharing()
 {
     if (running)
     {
+        thread->blockSignals(true);
+        qApp->removePostedEvents(this, QEvent::MetaCall);
         thread->requestInterruption();
         thread->wait();
         thread.reset();

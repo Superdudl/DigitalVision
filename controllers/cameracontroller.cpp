@@ -180,14 +180,14 @@ QPixmap CameraController::getRightImage()
 void CameraController::setLeftImage(cv::Mat frame, tSdkFrameHead *FrameHead)
 {
     QWriteLocker locker(&left_mutex);
-    QImage qimage(frame.data, frame.rows, frame.cols, frame.step, QImage::Format::Format_BGR888);
+    QImage qimage(frame.data, frame.cols, frame.rows, frame.step, QImage::Format::Format_BGR888);
     left_image = QPixmap::fromImage(qimage);
 }
 
 void CameraController::setRightImage(cv::Mat frame, tSdkFrameHead *FrameHead)
 {
     QWriteLocker locker(&right_mutex);
-    QImage qimage(frame.data, frame.rows, frame.cols, frame.step, QImage::Format::Format_RGB888);
+    QImage qimage(frame.data, frame.cols, frame.rows, frame.step, QImage::Format::Format_RGB888);
     right_image = QPixmap::fromImage(qimage);
 }
 
