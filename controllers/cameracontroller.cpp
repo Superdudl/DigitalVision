@@ -9,6 +9,7 @@
 #include <QString>
 #include <algorithm>
 #include <QSettings>
+#include <QTransform>
 
 extern QSettings qapp_settings;
 
@@ -34,6 +35,7 @@ void CameraThread::run()
 {
     CameraPlay(*hCamera);
     qDebug() << "Поток запущен";
+    CameraSetMirror(*hCamera, 0, 1);
     QPixmap pixmap;
 
     flag_reversed = qapp_settings.value("camera/reversed", false).toBool();
@@ -80,6 +82,8 @@ void CameraThread::run()
 
             if (isInterruptionRequested())
                 qDebug() << "Вызвано прерывание";
+
+            msleep(33);
         }
 
     }
@@ -187,7 +191,7 @@ void CameraController::setLeftImage(cv::Mat frame, tSdkFrameHead *FrameHead)
 void CameraController::setRightImage(cv::Mat frame, tSdkFrameHead *FrameHead)
 {
     QWriteLocker locker(&right_mutex);
-    QImage qimage(frame.data, frame.cols, frame.rows, frame.step, QImage::Format::Format_RGB888);
+    QImage qimage(frame.data, frame.cols, frame.rows, frame.step, QImage::Format::Format_BGR888);
     right_image = QPixmap::fromImage(qimage);
 }
 

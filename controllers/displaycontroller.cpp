@@ -44,20 +44,13 @@ void ShareThread::run()
 
     while (!isInterruptionRequested())
     {
-        {
-            QReadLocker lockL(camera_controller->getLeftMutex());
-            QReadLocker lockR(camera_controller->getRightMutex());
 
-            left_pixmap = camera_controller->getLeftImage();
-            right_pixmap = camera_controller->getRightImage();
+        left_pixmap = camera_controller->getLeftImage().scaled(left_shared_screen->size(), Qt::KeepAspectRatio, Qt::FastTransformation);
+        right_pixmap = camera_controller->getRightImage().scaled(right_shared_screen->size(), Qt::KeepAspectRatio, Qt::FastTransformation);
 
-            if (!left_pixmap.isNull())
-                left_pixmap = left_pixmap.scaled(left_shared_screen->size(), Qt::KeepAspectRatio, Qt::FastTransformation);
-            if (!right_pixmap.isNull())
-                right_pixmap = right_pixmap.scaled(right_shared_screen->size(), Qt::KeepAspectRatio, Qt::FastTransformation);
+        emit frame_ready(left_pixmap, right_pixmap);
 
-            emit frame_ready(left_pixmap, right_pixmap);
-        }
+        msleep(33);
     }
     return;
 }
@@ -117,7 +110,6 @@ void ShareController::stop_sharing()
         thread.reset();
         running = FALSE;
     }
-    return;
 }
 
 
