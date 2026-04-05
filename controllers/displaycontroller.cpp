@@ -5,6 +5,7 @@
 #include <QScreen>
 #include <opencv2/opencv.hpp>
 #include <QDebug>
+#include <chrono>
 
 ShareThread::ShareThread(std::shared_ptr<CameraController> camera_controller, QObject *parent)
 {
@@ -13,7 +14,6 @@ ShareThread::ShareThread(std::shared_ptr<CameraController> camera_controller, QO
     auto right_index = camera_controller->ui->DisplayRight->currentIndex();
     QApplication* app = qApp;
     auto screens = app->screens();
-
 
     left_shared_screen = new QLabel;
     left_shared_screen->setStyleSheet("background-color: black");
@@ -41,16 +41,25 @@ ShareThread::~ShareThread()
 void ShareThread::run()
 {
     QPixmap left_pixmap, right_pixmap;
+    using clock = std::chrono::steady_clock;
+    auto time = clock::now();
+    auto frame_duration = std::chrono::milliseconds(1000 / 30);
 
     while (!isInterruptionRequested())
     {
+        time += frame_duration;
 
         left_pixmap = camera_controller->getLeftImage().scaled(left_shared_screen->size(), Qt::KeepAspectRatio, Qt::FastTransformation);
         right_pixmap = camera_controller->getRightImage().scaled(right_shared_screen->size(), Qt::KeepAspectRatio, Qt::FastTransformation);
 
         emit frame_ready(left_pixmap, right_pixmap);
 
-        msleep(33);
+        if (clock::now() > time)
+        {
+            time = clock::now();
+        }
+
+        std::this_thread::sleep_until(time);
     }
     return;
 }

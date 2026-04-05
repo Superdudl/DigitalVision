@@ -10,6 +10,7 @@
 #include <algorithm>
 #include <QSettings>
 #include <QTransform>
+#include <chrono>
 
 extern QSettings qapp_settings;
 
@@ -35,7 +36,7 @@ void CameraThread::run()
 {
     CameraPlay(*hCamera);
     qDebug() << "Поток запущен";
-    CameraSetMirror(*hCamera, 0, 1);
+    CameraSetMirror(*hCamera, 1, 1);
     QPixmap pixmap;
 
     flag_reversed = qapp_settings.value("camera/reversed", false).toBool();
@@ -51,9 +52,14 @@ void CameraThread::run()
         if (*hCamera == 2) possition = CameraPossition::RIGHT;
     }
 
+    using clock = std::chrono::steady_clock;
+    auto time = clock::now();
+    auto frame_durration = std::chrono::milliseconds(1000 / 30);
+
     while (!isInterruptionRequested())
     {
-        auto status = CameraGetImageBuffer(*hCamera, &FrameHead, &pRawData, 2000);
+        time = time + frame_durration;
+        auto status = CameraGetImageBuffer(*hCamera, &FrameHead, &pRawData, 1000);
 
         if (status == CAMERA_STATUS_SUCCESS)
         {
@@ -83,7 +89,11 @@ void CameraThread::run()
             if (isInterruptionRequested())
                 qDebug() << "Вызвано прерывание";
 
-            msleep(33);
+            if (clock::now() > time) {
+                time = clock::now();
+            }
+
+            std::this_thread::sleep_until(time);
         }
 
     }
