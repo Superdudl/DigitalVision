@@ -11,7 +11,7 @@
 #include <vector>
 #include <opencv2/opencv.hpp>
 #include <memory>
-#include <QMutex>
+#include <QReadWriteLock>
 
 class CameraController;
 
@@ -91,20 +91,24 @@ public:
     std::vector<std::shared_ptr<CameraThread>> threads;
 
     // Переменные для хранения изображений с камер
-    cv::Mat left_image;
-    cv::Mat right_image;
+    QPixmap left_image;
+    QPixmap right_image;
 
-    // Копирование изображений с камеры в cv::Mat left_image
-    void setRightImage(BYTE* pFrameBuffer, tSdkFrameHead *FrameHead);
-    // Копирование изображений с камеры в cv::Mat right_image
-    void setLeftImage(BYTE* pFrameBuffer, tSdkFrameHead *FrameHead);
+    // Копирование изображений с камеры в QPixmap left_image
+    void setRightImage(cv::Mat frame, tSdkFrameHead *FrameHead);
+    // Копирование изображений с камеры в QPixmap right_image
+    void setLeftImage(cv::Mat frame, tSdkFrameHead *FrameHead);
 
-    cv::Mat getRightImage();
-    cv::Mat getLeftImage();
+    QPixmap getRightImage();
+    QPixmap getLeftImage();
+
+    inline QReadWriteLock* getLeftMutex(){ return &left_mutex; }
+    inline QReadWriteLock* getRightMutex(){ return &right_mutex; }
+
 
 private:
-    QMutex left_mutex;
-    QMutex right_mutex;
+    QReadWriteLock left_mutex;
+    QReadWriteLock right_mutex;
 
     // Получение параметров камеры
     void getCameraParams(int *index);

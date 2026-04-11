@@ -44,7 +44,7 @@ signals:
 private slots:
     void share_screen();
     void stop_sharing();
-    void update_image(QPixmap left_pixmap, QPixmap right_pixmap);
+    void update_frames(QPixmap left_frame, QPixmap right_frame);
 };
 
 #endif // SHARECONTROLLER_H
